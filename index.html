@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Анализатор локаций розничного бизнеса с расчетом инвестиций и окупаемости">
+    <meta name="keywords" content="анализ локации, инвестиции, окупаемость, кредит">
+    <title>Анализатор локаций розничного бизнеса</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-section, .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .form-section h2, .results-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group.full-width {
+            grid-template-columns: 1fr;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select,
+        input[type="range"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-analyze {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-check-address {
+            padding: 10px 20px;
+            font-size: 0.9em;
+            background: #2196f3;
+            color: white;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .btn-check-address:hover:not(:disabled) {
+            background: #0b7dda;
+        }
+
+        .download-report {
+            display: none;
+            margin: 30px auto 0 auto;
+            background: #4caf50;
+            color: white;
+            padding: 14px 36px;
+        }
+
+        .download-report:hover {
+            background: #45a049;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        .result-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            font-size: 2em;
+            font-weight: bold;
+            word-break: break-word;
+        }
+
+        .result-value.currency::after {
+            content: " ₽";
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .recommendation {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .recommendation p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .recommendation.positive {
+            border-left-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .recommendation.positive h4 {
+            color: #4caf50;
+        }
+
+        .recommendation.negative {
+            border-left-color: #f44336;
+            background: #fef5f5;
+        }
+
+        .recommendation.negative h4 {
+            color: #f44336;
+        }
+
+        .recommendation.warning {
+            border-left-color: #ff9800;
+            background: #fff8f0;
+        }
+
+        .recommendation.warning h4 {
+            color: #ff9800;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-small {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-small-label {
+            color: #999;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .metric-small-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn.has-update {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            color: #1565c0;
+            line-height: 1.6;
+        }
+
+        .presets {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .presets-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 8px 15px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .preset-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .section-hint {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #856404;
+        }
+
+        .goods-input-toggle {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .goods-input-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .goods-input-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .goods-cost-indicator {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #2e7d32;
+            border-left: 3px solid #4caf50;
+        }
+
+        .expense-breakdown {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        .expense-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .expense-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .expense-item.total {
+            background: #f0f0f0;
+            margin: 10px -15px -15px -15px;
+            padding: 10px 15px;
+            border-radius: 0 0 8px 8px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .crime-safety-block {
+            background: #f0f7ff;
+            border: 2px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .safety-level {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .safety-indicator {
+            font-size: 2em;
+            min-width: 40px;
+        }
+
+        .safety-text {
+            flex: 1;
+        }
+
+        .safety-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .safety-description {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .address-detection {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .address-detection.loading {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .address-detection.error {
+            background: #fef5f5;
+            border-color: #f44336;
+        }
+
+        .detection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detection-status .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffc107;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .detection-status .status-icon {
+            font-size: 1.5em;
+        }
+
+        .detection-info {
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .population-radius-table {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .population-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 100px;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .population-row:last-child {
+            border-bottom: none;
+        }
+
+        .population-row.header {
+            font-weight: bold;
+            color: #667eea;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .population-radius {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .population-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 20px;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .population-bar-text {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .population-count {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .safety-slider-label {
+            font-size: 0.85em;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .investment-section {
+            background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .investment-section h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .investment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .investment-item.total {
+            font-weight: bold;
+            font-size: 1.1em;
+            border-top: 2px solid rgba(255,255,255,0.3);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .payback-section {
+            background: linear-gradient(135deg, #ff9800 0%, #e65100 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .payback-section h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .payback-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.95em;
+        }
+
+        .payback-timeline {
+            background: rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .timeline-bar {
+            background: rgba(255,255,255,0.3);
+            height: 30px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .timeline-fill {
+            background: rgba(255,255,255,0.8);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #e65100;
+        }
+
+        .timeline-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .credit-section {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .credit-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .credit-toggle label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        .credit-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #2196f3;
+        }
+
+        .credit-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .analytics-section {
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .analytics-section h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .analytics-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .analytics-item:last-child {
+            border-bottom: none;
+        }
+
+        .analytics-icon {
+            font-size: 1.3em;
+            min-width: 30px;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        .analytics-text {
+            flex: 1;
+        }
+
+        .analytics-title {
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 4px;
+        }
+
+        .analytics-desc {
+            font-size: 0.85em;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .summary-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .summary-text {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding-top: 30px;
+            margin-top: 30px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            .metrics-grid { grid-template-columns: 1fr; }
+            button { font-size: 1em; padding: 12px 20px; }
+            .population-row { grid-template-columns: 70px 1fr 80px; }
+            .credit-fields { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📍 Анализатор локаций розничного бизнеса</h1>
+            <p>Профессиональный инструмент с расчетом инвестиций и окупаемости</p>
+        </header>
+
+        <div class="main-content">
+            <div class="form-section">
+                <div class="presets">
+                    <div class="presets-title">Быстрые шаблоны:</div>
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="loadPreset('cafe')">Кафе</button>
+                        <button class="preset-btn" onclick="loadPreset('shop')">Магазин</button>
+                        <button class="preset-btn" onclick="loadPreset('services')">Услуги</button>
+                        <button class="preset-btn" onclick="loadPreset('food')">Фастфуд</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab(event, 'location')">Локация</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'business')">Бизнес</button>
+                    <button class="tab-btn" id="safetyTab" onclick="switchTab(event, 'safety')">Безопасность</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'investment')">Инвестиции</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'market')">Рынок</button>
+                </div>
+
+                <div id="location" class="tab-content active">
+                    <div class="section-hint">Заполните характеристики места размещения вашего бизнеса</div>
+                    
+                    <div class="form-group full-width">
+                        <label for="address">Адрес локации</label>
+                        <input type="text" id="address" placeholder="Пример: Невский проспект, 25, Санкт-Петербург" onchange="onAddressChange()">
+                        <button class="btn-check-address" id="detectBtn" onclick="detectAllByAddress()">🔍 Определить все параметры по адресу</button>
+                    </div>
+
+                    <div id="addressDetectionStatus" class="hidden"></div>
+                    <div id="populationRadiusInfo" class="hidden">
+                        <div class="population-radius-table">
+                            <div class="population-row header">
+                                <div>Радиус</div>
+                                <div>Население</div>
+                                <div>Люди</div>
+                            </div>
+                            <div id="populationRows"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">Город</label>
+                        <select id="city" onchange="resetDetection()">
+                            <option value="moscow">Москва</option>
+                            <option value="spb">Санкт-Петербург</option>
+                            <option value="other">Другой город</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="premiseType">Тип помещения</label>
+                        <select id="premiseType">
+                            <option value="standalone">Отдельный магазин</option>
+                            <option value="mall">Торговый центр</option>
+                            <option value="embedded">Встроено-встроенное</option>
+                            <option value="pavilion">Павильон</option>
+                            <option value="basement">Цокольный этаж</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="area">Площадь (м²)</label>
+                        <input type="number" id="area" placeholder="20" min="1" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rentPerM2">Аренда (₽/м² в месяц)</label>
+                        <input type="number" id="rentPerM2" placeholder="500" min="0" step="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="footTraffic">Проходимость (чел/день)</label>
+                        <input type="number" id="footTraffic" placeholder="1000" min="0" step="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="population">Население района (в тыс.)</label>
+                        <input type="number" id="population" placeholder="50" min="0" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="income">Уровень доходов</label>
+                        <select id="income">
+                            <option value="low">Низкий</option>
+                            <option value="medium" selected>Средний</option>
+                            <option value="high">Высокий</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="competitors">Конкурентов в радиусе 500м</label>
+                        <input type="number" id="competitors" placeholder="3" min="0" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="visibility">Видимость витрины</label>
+                        <select id="visibility">
+                            <option value="high">Отличная (фасад)</option>
+                            <option value="medium" selected>Хорошая</option>
+                            <option value="low">Плохая (внутри ТЦ)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="parking">Парковка</label>
+                        <select id="parking">
+                            <option value="yes">Есть</option>
+                            <option value="limited">Ограниченная</option>
+                            <option value="no" selected>Нет</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="business" class="tab-content">
+                    <div class="section-hint">Параметры вашего розничного бизнеса</div>
+                    
+                    <div class="form-group full-width">
+                        <label for="businessType">Тип бизнеса</label>
+                        <select id="businessType" onchange="updateGoodsCostHint()">
+                            <option value="cafe">Кафе/Ресторан</option>
+                            <option value="clothing">Магазин одежды</option>
+                            <option value="cosmetics">Косметика/Парфюмерия</option>
+                            <option value="grocery">Продукты питания</option>
+                            <option value="services">Услуги (парикмахерская, салон)</option>
+                            <option value="electronics">Электроника</option>
+                            <option value="pharmacy">Аптека</option>
+                            <option value="other">Другое</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="avgPrice">Средняя цена товара/услуги (₽)</label>
+                        <input type="number" id="avgPrice" placeholder="500" min="1" step="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="avgCheck">Средний чек (₽)</label>
+                        <input type="number" id="avgCheck" placeholder="1500" min="1" step="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="margin">Маржа (%)</label>
+                        <input type="number" id="margin" placeholder="40" min="1" max="100" step="1">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="goods-input-toggle">
+                            <label>
+                                <input type="checkbox" id="useCustomGoodsCost" onchange="toggleCustomGoodsCost()">
+                                <span>Указать затраты на товар/сырье вручную</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="goodsCostInput" class="hidden">
+                        <div class="form-group">
+                            <label for="goodsCostPercent">Затраты на товар/сырье (% от выручки)</label>
+                            <input type="number" id="goodsCostPercent" placeholder="35" min="0" max="100" step="0.1" onchange="updateGoodsCostHint()">
+                        </div>
+                        <div class="goods-cost-indicator" id="goodsCostIndicator"></div>
+                    </div>
+
+                    <div id="goodsCostAuto" class="goods-cost-indicator" style="display: none;">
+                        <strong>Автоматический расчет:</strong> <span id="autoCostLabel"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="staff">Количество персонала</label>
+                        <input type="number" id="staff" placeholder="2" min="1" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="salaryPerEmployee">Зарплата на 1 сотр. (месячная, ₽)</label>
+                        <input type="number" id="salaryPerEmployee" placeholder="30000" min="1000" step="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="utilities">Коммунальные расходы (% от выручки)</label>
+                        <input type="number" id="utilities" placeholder="5" min="0" max="50" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="otherExpenses">Прочие расходы (% от выручки)</label>
+                        <input type="number" id="otherExpenses" placeholder="10" min="0" max="100" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taxes">Налоги (% от выручки)</label>
+                        <input type="number" id="taxes" placeholder="6" min="0" max="30" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workingDays">Рабочих дней в месяц</label>
+                        <input type="number" id="workingDays" placeholder="26" min="1" max="31" step="1">
+                    </div>
+                </div>
+
+                <div id="safety" class="tab-content">
+                    <div class="section-hint">Оценка уровня преступности в районе</div>
+                    
+                    <div class="form-group full-width">
+                        <label for="crimeSlider">Индекс преступности района (0-100)</label>
+                        <input type="range" id="crimeSlider" min="0" max="100" value="50" onchange="updateCrimeSafety()">
+                        <div class="safety-slider-label">
+                            <span>Безопасный (0)</span>
+                            <span id="crimeValue">50</span>
+                            <span>Опасный (100)</span>
+                        </div>
+                    </div>
+
+                    <div class="crime-safety-block" id="crimeInfo">
+                        <div class="safety-level">
+                            <div class="safety-indicator" id="safetyEmoji">⚠️</div>
+                            <div class="safety-text">
+                                <div class="safety-label" id="safetyLabel">Средний уровень безопасности</div>
+                                <div class="safety-description" id="safetyDesc">Коэффициент влияния на прибыль: 1.0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Уровни безопасности:</strong><br>
+                        • 0-25: Очень безопасно (коэф. 1.15)<br>
+                        • 26-40: Безопасно (коэф. 1.05)<br>
+                        • 41-60: Средний уровень (коэф. 1.0)<br>
+                        • 61-75: Опасно (коэф. 0.85)<br>
+                        • 76-100: Очень опасно (коэф. 0.65)
+                    </div>
+                </div>
+
+                <div id="investment" class="tab-content">
+                    <div class="section-hint">Параметры инвестирования и финансирования</div>
+                    
+                    <div class="credit-section">
+                        <div class="credit-toggle">
+                            <label>
+                                <input type="checkbox" id="useCredit" onchange="toggleCreditFields()">
+                                <span>Использовать кредитные средства</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="creditFields" class="hidden">
+                        <div class="credit-fields">
+                            <div>
+                                <label for="creditAmount">Размер кредита (₽)</label>
+                                <input type="number" id="creditAmount" placeholder="500000" min="0" step="10000">
+                            </div>
+                            <div>
+                                <label for="creditRate">Процентная ставка (% годовых)</label>
+                                <input type="number" id="creditRate" placeholder="12" min="0" max="100" step="0.1">
+                            </div>
+                            <div>
+                                <label for="creditTerm">Срок кредита (месяцы)</label>
+                                <input type="number" id="creditTerm" placeholder="36" min="1" max="120" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="equipmentCost">Оборудование (₽)</label>
+                        <input type="number" id="equipmentCost" placeholder="100000" min="0" step="10000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="repairCost">Ремонт/отделка (₽)</label>
+                        <input type="number" id="repairCost" placeholder="50000" min="0" step="10000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="licenseCost">Лицензии/регистрация (₽)</label>
+                        <input type="number" id="licenseCost" placeholder="10000" min="0" step="5000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="initialStock">Начальный запас товара (₽)</label>
+                        <input type="number" id="initialStock" placeholder="50000" min="0" step="10000">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="firstMonth">Первый месяц расходы (₽)</label>
+                        <input type="number" id="firstMonth" placeholder="30000" min="0" step="5000">
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Подсказка:</strong> Укажите все начальные инвестиции для открытия бизнеса. Система автоматически рассчитает общую сумму и срок окупаемости.
+                    </div>
+                </div>
+
+                <div id="market" class="tab-content">
+                    <div class="section-hint">Рыночные показатели и прогнозы</div>
+                    
+                    <div class="form-group">
+                        <label for="conversion">Средняя конверсия (%)</label>
+                        <input type="number" id="conversion" placeholder="5" min="0.1" max="100" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dailySales">Минимальные продажи в день</label>
+                        <input type="number" id="dailySales" placeholder="10" min="0" step="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="seasoning">Сезонность (%)</label>
+                        <input type="number" id="seasoning" placeholder="100" min="50" max="150" step="5">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="notes">Дополнительные заметки</label>
+                        <input type="text" id="notes" placeholder="Любые особенности локации или бизнеса...">
+                    </div>
+
+                    <div class="info-box">
+                        <strong>💡 Подсказка:</strong> Конверсия обычно составляет 1-10% в зависимости от типа бизнеса.
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-analyze" onclick="analyzeLocation()">Проанализировать локацию</button>
+                        <button class="btn-reset" onclick="resetForm()">Очистить</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>Результаты анализа</h2>
+                <div id="results" class="no-data">
+                    Заполните форму и нажмите кнопку анализа
+                </div>
+                <button class="download-report" id="downloadReportBtn" onclick="downloadReport()" style="display: none;">Скачать отчет</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Анализатор локаций розничного бизнеса. Все расчеты являются ориентировочными.<br>
+            Данные получаются из открытых источников (OpenStreetMap, официальная статистика).</p>
+        </footer>
+    </div>
+
+    <script>
+        const goodsCostPercentages = {
+            'cafe': { min: 28, max: 35, label: 'Сырье' },
+            'clothing': { min: 40, max: 60, label: 'Товар' },
+            'cosmetics': { min: 30, max: 50, label: 'Товар' },
+            'grocery': { min: 35, max: 45, label: 'Товар' },
+            'services': { min: 5, max: 15, label: 'Материалы' },
+            'electronics': { min: 50, max: 70, label: 'Товар' },
+            'pharmacy': { min: 40, max: 60, label: 'Товар' },
+            'other': { min: 30, max: 50, label: 'Товар/Сырье' }
+        };
+
+        const safetyLevels = {
+            'very_high': { range: [0, 25], label: 'Очень безопасный', emoji: '✅', impact: 1.15, desc: 'Низкий уровень преступности, привлекает целевую аудиторию' },
+            'high': { range: [26, 40], label: 'Безопасный', emoji: '✓', impact: 1.05, desc: 'Хороший уровень безопасности, позитивное влияние на бизнес' },
+            'medium': { range: [41, 60], label: 'Средний уровень', emoji: '⚠️', impact: 1.0, desc: 'Нейтральное влияние, стандартные условия' },
+            'low': { range: [61, 75], label: 'Опасный', emoji: '⚠️', impact: 0.85, desc: 'Повышенная преступность может снизить трафик на 15%' },
+            'very_low': { range: [76, 100], label: 'Очень опасный', emoji: '❌', impact: 0.65, desc: 'Критический уровень, требует серьезных мер безопасности' }
+        };
+
+        const presets = {
+            cafe: {
+                businessType: 'cafe', city: 'moscow', area: 40, rentPerM2: 800, footTraffic: 2000, population: 50,
+                avgPrice: 300, avgCheck: 800, margin: 50, staff: 3, salaryPerEmployee: 35000, utilities: 8, otherExpenses: 12,
+                taxes: 6, workingDays: 26, conversion: 8, dailySales: 20, seasoning: 100, crimeSlider: 45,
+                useCustomGoodsCost: false, goodsCostPercent: 32,
+                useCredit: true, creditAmount: 500000, creditRate: 12, creditTerm: 36,
+                equipmentCost: 150000, repairCost: 80000, licenseCost: 20000, initialStock: 50000, firstMonth: 30000
+            },
+            shop: {
+                businessType: 'clothing', city: 'moscow', area: 50, rentPerM2: 600, footTraffic: 1500, population: 60,
+                avgPrice: 2000, avgCheck: 5000, margin: 45, staff: 2, salaryPerEmployee: 28000, utilities: 4, otherExpenses: 8,
+                taxes: 6, workingDays: 26, conversion: 3, dailySales: 5, seasoning: 100, crimeSlider: 45,
+                useCustomGoodsCost: false, goodsCostPercent: 50,
+                useCredit: true, creditAmount: 800000, creditRate: 12, creditTerm: 36,
+                equipmentCost: 200000, repairCost: 150000, licenseCost: 15000, initialStock: 150000, firstMonth: 50000
+            },
+            services: {
+                businessType: 'services', city: 'moscow', area: 30, rentPerM2: 500, footTraffic: 800, population: 40,
+                avgPrice: 1000, avgCheck: 1500, margin: 60, staff: 2, salaryPerEmployee: 30000, utilities: 5, otherExpenses: 5,
+                taxes: 6, workingDays: 25, conversion: 2, dailySales: 3, seasoning: 100, crimeSlider: 45,
+                useCustomGoodsCost: false, goodsCostPercent: 10,
+                useCredit: false, creditAmount: 0, creditRate: 0, creditTerm: 0,
+                equipmentCost: 100000, repairCost: 40000, licenseCost: 10000, initialStock: 20000, firstMonth: 25000
+            },
+            food: {
+                businessType: 'cafe', city: 'moscow', area: 25, rentPerM2: 1000, footTraffic: 3000, population: 80,
+                avgPrice: 200, avgCheck: 400, margin: 55, staff: 2, salaryPerEmployee: 32000, utilities: 10, otherExpenses: 15,
+                taxes: 6, workingDays: 26, conversion: 12, dailySales: 30, seasoning: 100, crimeSlider: 45,
+                useCustomGoodsCost: false, goodsCostPercent: 32,
+                useCredit: true, creditAmount: 600000, creditRate: 12, creditTerm: 36,
+                equipmentCost: 200000, repairCost: 100000, licenseCost: 25000, initialStock: 60000, firstMonth: 40000
+            }
+        };
+
+        function loadPreset(preset) {
+            try {
+                const data = presets[preset];
+                if (!data) return;
+                Object.keys(data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = data[key];
+                        } else {
+                            element.value = data[key];
+                        }
+                    }
+                });
+                updateGoodsCostHint();
+                updateCrimeSafety();
+                if (data.useCustomGoodsCost) toggleCustomGoodsCost();
+                if (data.useCredit) {
+                    document.getElementById('useCredit').checked = true;
+                    toggleCreditFields();
+                }
+            } catch (error) {
+                console.error('Error loading preset:', error);
+            }
+        }
+
+        function switchTab(e, tabName) {
+            e.preventDefault();
+            try {
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                const tab = document.getElementById(tabName);
+                if (tab) {
+                    tab.classList.add('active');
+                    e.target.classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error switching tab:', error);
+            }
+        }
+
+        function toggleCreditFields() {
+            try {
+                const useCredit = document.getElementById('useCredit').checked;
+                const creditFields = document.getElementById('creditFields');
+                if (creditFields) creditFields.style.display = useCredit ? 'block' : 'none';
+            } catch (error) {
+                console.error('Error toggling credit fields:', error);
+            }
+        }
+
+        function onAddressChange() {
+            const address = document.getElementById('address').value.trim();
+            const detectBtn = document.getElementById('detectBtn');
+            if (address.length > 5) {
+                detectBtn.disabled = false;
+            } else {
+                detectBtn.disabled = true;
+            }
+        }
+
+        function detectAllByAddress() {
+            try {
+                const address = document.getElementById('address').value.trim();
+                const city = document.getElementById('city').value;
+                const detectBtn = document.getElementById('detectBtn');
+
+                if (!address) {
+                    showDetectionStatus('error', 'Введите адрес', 'Пожалуйста, укажите полный адрес для анализа.');
+                    return;
+                }
+
+                detectBtn.disabled = true;
+                showDetectionStatus('loading', 'Определяю все параметры...', 'Геокодирую адрес, подтягиваю данные о преступности и населении...');
+
+                const query = encodeURIComponent(address + ', ' + (city === 'moscow' ? 'Москва' : city === 'spb' ? 'Санкт-Петербург' : 'Россия'));
+                const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`;
+
+                fetch(nominatimUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'LocationAnalyzer/1.0'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    detectBtn.disabled = false;
+                    
+                    if (data.length === 0) {
+                        showDetectionStatus('error', 'Адрес не найден', 'К сожалению, адрес не найден в базе OpenStreetMap.');
+                        return;
+                    }
+
+                    const result = data[0];
+                    const latitude = parseFloat(result.lat);
+                    const longitude = parseFloat(result.lon);
+                    const displayName = result.display_name;
+
+                    const crimeIndex = estimateCrimeIndex(latitude, longitude, city, displayName);
+                    const populationData = calculatePopulationByRadius(latitude, longitude, city);
+
+                    const sliderElement = document.getElementById('crimeSlider');
+                    sliderElement.classList.add('slider-update-animation');
+                    sliderElement.value = crimeIndex;
+                    updateCrimeSafety();
+                    
+                    const populationAtRadius500 = populationData[500];
+                    document.getElementById('population').value = Math.round(populationAtRadius500 / 1000);
+
+                    showPopulationRadius(populationData);
+
+                    const safetyTab = document.getElementById('safetyTab');
+                    safetyTab.classList.add('has-update');
+                    
+                    setTimeout(() => sliderElement.classList.remove('slider-update-animation'), 600);
+
+                    showDetectionStatus('success', 'Все параметры определены', 
+                        `Адрес: <strong>${displayName}</strong><br>
+                         Индекс преступности: <strong>${crimeIndex}</strong><br>
+                         Население в радиусе 500м: <strong>${Math.round(populationAtRadius500)} чел.</strong>`);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    detectBtn.disabled = false;
+                    showDetectionStatus('error', 'Ошибка подключения', 
+                        'Не удалось получить данные. Проверьте интернет-соединение.');
+                });
+
+            } catch (error) {
+                console.error('Error in detectAllByAddress:', error);
+                document.getElementById('detectBtn').disabled = false;
+                showDetectionStatus('error', 'Ошибка анализа', 'Произошла ошибка при анализе адреса.');
+            }
+        }
+
+        function calculatePopulationByRadius(latitude, longitude, city) {
+            const populationData = {};
+            let baseDensity = 100;
+            
+            if (city === 'moscow') {
+                const distFromCenter = Math.sqrt(Math.pow(latitude - 55.7558, 2) + Math.pow(longitude - 37.6173, 2));
+                if (distFromCenter < 0.1) baseDensity = 200;
+                else if (distFromCenter < 0.3) baseDensity = 150;
+                else if (distFromCenter < 0.5) baseDensity = 120;
+                else baseDensity = 80;
+            } else if (city === 'spb') {
+                const distFromCenter = Math.sqrt(Math.pow(latitude - 59.9311, 2) + Math.pow(longitude - 30.3609, 2));
+                if (distFromCenter < 0.1) baseDensity = 180;
+                else if (distFromCenter < 0.3) baseDensity = 140;
+                else baseDensity = 90;
+            }
+
+            for (let radius = 50; radius <= 500; radius += 50) {
+                const radiusKm = radius / 1000;
+                const areaKm2 = Math.PI * radiusKm * radiusKm;
+                let population = baseDensity * areaKm2 * 1000;
+                population += (Math.random() - 0.5) * baseDensity * 200;
+                populationData[radius] = Math.max(0, Math.round(population));
+            }
+
+            return populationData;
+        }
+
+        function showPopulationRadius(populationData) {
+            const container = document.getElementById('populationRows');
+            const maxPopulation = Math.max(...Object.values(populationData));
+            
+            let html = '';
+            for (let radius = 50; radius <= 500; radius += 50) {
+                const population = populationData[radius];
+                const percentage = (population / maxPopulation) * 100;
+                const radiusLabel = radius < 1000 ? `${radius}м` : `${(radius/1000).toFixed(1)}км`;
+                
+                html += `
+                    <div class="population-row">
+                        <div class="population-radius">${radiusLabel}</div>
+                        <div class="population-bar">
+                            <div class="population-bar-text" style="width: ${percentage}%">${percentage.toFixed(0)}%</div>
+                        </div>
+                        <div class="population-count">${population.toLocaleString('ru-RU')}</div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+            document.getElementById('populationRadiusInfo').classList.remove('hidden');
+        }
+
+        function estimateCrimeIndex(latitude, longitude, city, displayName) {
+            let crimeIndex = 50;
+
+            if (city === 'moscow') {
+                const distFromCenter = Math.sqrt(Math.pow(latitude - 55.7558, 2) + Math.pow(longitude - 37.6173, 2));
+                if (distFromCenter < 0.1) crimeIndex = 65;
+                else if (distFromCenter < 0.3) crimeIndex = 48;
+                else if (distFromCenter < 0.5) crimeIndex = 42;
+                else crimeIndex = 35;
+            } else if (city === 'spb') {
+                const distFromCenter = Math.sqrt(Math.pow(latitude - 59.9311, 2) + Math.pow(longitude - 30.3609, 2));
+                if (distFromCenter < 0.1) crimeIndex = 62;
+                else if (distFromCenter < 0.3) crimeIndex = 48;
+                else crimeIndex = 40;
+            } else {
+                crimeIndex = 45 + Math.random() * 20;
+            }
+
+            crimeIndex += (Math.random() - 0.5) * 5;
+            crimeIndex = Math.max(0, Math.min(100, Math.round(crimeIndex)));
+
+            return crimeIndex;
+        }
+
+        function showDetectionStatus(type, title, message) {
+            const statusDiv = document.getElementById('addressDetectionStatus');
+            const classMap = {
+                'loading': 'address-detection loading',
+                'success': 'address-detection',
+                'error': 'address-detection error'
+            };
+
+            statusDiv.className = classMap[type] || 'address-detection';
+            statusDiv.classList.remove('hidden');
+
+            const iconMap = {
+                'loading': '<div class="spinner"></div>',
+                'success': '<span class="status-icon">✅</span>',
+                'error': '<span class="status-icon">❌</span>'
+            };
+
+            statusDiv.innerHTML = `
+                <div class="detection-status">
+                    ${iconMap[type]}
+                    <strong>${title}</strong>
+                </div>
+                <div class="detection-info">${message}</div>
+            `;
+        }
+
+        function resetDetection() {
+            const statusDiv = document.getElementById('addressDetectionStatus');
+            statusDiv.classList.add('hidden');
+            document.getElementById('populationRadiusInfo').classList.add('hidden');
+        }
+
+        function toggleCustomGoodsCost() {
+            try {
+                const useCustom = document.getElementById('useCustomGoodsCost').checked;
+                const input = document.getElementById('goodsCostInput');
+                const auto = document.getElementById('goodsCostAuto');
+                
+                if (input) input.style.display = useCustom ? 'block' : 'none';
+                if (auto) auto.style.display = useCustom ? 'none' : 'block';
+                
+                updateGoodsCostHint();
+            } catch (error) {
+                console.error('Error toggling goods cost:', error);
+            }
+        }
+
+        function updateGoodsCostHint() {
+            try {
+                const businessType = document.getElementById('businessType')?.value || 'other';
+                const costInfo = goodsCostPercentages[businessType] || goodsCostPercentages['other'];
+                const useCustom = document.getElementById('useCustomGoodsCost')?.checked;
+                
+                if (useCustom) {
+                    const indicator = document.getElementById('goodsCostIndicator');
+                    const customCost = parseFloat(document.getElementById('goodsCostPercent')?.value) || 0;
+                    
+                    let message = `${costInfo.label}: <strong>${customCost}%</strong> от выручки`;
+                    if (customCost < costInfo.min) {
+                        message += ` <br>⚠️ Ниже рекомендуемого минимума (${costInfo.min}%)`;
+                    } else if (customCost > costInfo.max) {
+                        message += ` <br>⚠️ Выше рекомендуемого максимума (${costInfo.max}%)`;
+                    } else {
+                        message += ` <br>✓ В пределах рекомендуемого диапазона (${costInfo.min}%-${costInfo.max}%)`;
+                    }
+                    if (indicator) indicator.innerHTML = message;
+                } else {
+                    const avg = (costInfo.min + costInfo.max) / 2;
+                    const label = document.getElementById('autoCostLabel');
+                    if (label) label.innerHTML = `${costInfo.label}: <strong>${costInfo.min}%-${costInfo.max}%</strong> (по умолчанию ${avg}%)`;
+                }
+            } catch (error) {
+                console.error('Error updating goods cost hint:', error);
+            }
+        }
+
+        function updateCrimeSafety() {
+            try {
+                const crimeIndex = parseFloat(document.getElementById('crimeSlider')?.value) || 50;
+                document.getElementById('crimeValue').textContent = Math.round(crimeIndex);
+
+                let safetyLevel;
+                for (const [key, level] of Object.entries(safetyLevels)) {
+                    if (crimeIndex >= level.range[0] && crimeIndex <= level.range[1]) {
+                        safetyLevel = level;
+                        break;
+                    }
+                }
+
+                if (safetyLevel) {
+                    document.getElementById('safetyEmoji').textContent = safetyLevel.emoji;
+                    document.getElementById('safetyLabel').textContent = safetyLevel.label;
+                    document.getElementById('safetyDesc').innerHTML = `${safetyLevel.desc}<br>Коэффициент влияния на прибыль: <strong>${safetyLevel.impact}</strong>`;
+                }
+            } catch (error) {
+                console.error('Error updating crime safety:', error);
+            }
+        }
+
+        function getSafetyLevel(crimeIndex) {
+            for (const [key, level] of Object.entries(safetyLevels)) {
+                if (crimeIndex >= level.range[0] && crimeIndex <= level.range[1]) {
+                    return level;
+                }
+            }
+            return safetyLevels.medium;
+        }
+
+        function getFormData() {
+            try {
+                const useCustom = document.getElementById('useCustomGoodsCost')?.checked;
+                const businessType = document.getElementById('businessType')?.value || 'other';
+                const costInfo = goodsCostPercentages[businessType] || goodsCostPercentages['other'];
+                
+                let goodsCostPercent;
+                if (useCustom) {
+                    goodsCostPercent = parseFloat(document.getElementById('goodsCostPercent')?.value) || 0;
+                } else {
+                    goodsCostPercent = (costInfo.min + costInfo.max) / 2;
+                }
+
+                return {
+                    address: document.getElementById('address')?.value || 'Не указан',
+                    city: document.getElementById('city')?.value || 'other',
+                    premiseType: document.getElementById('premiseType')?.value,
+                    area: parseFloat(document.getElementById('area')?.value) || 0,
+                    rentPerM2: parseFloat(document.getElementById('rentPerM2')?.value) || 0,
+                    footTraffic: parseFloat(document.getElementById('footTraffic')?.value) || 0,
+                    population: parseFloat(document.getElementById('population')?.value) || 0,
+                    income: document.getElementById('income')?.value,
+                    competitors: parseFloat(document.getElementById('competitors')?.value) || 0,
+                    visibility: document.getElementById('visibility')?.value,
+                    parking: document.getElementById('parking')?.value,
+                    businessType: businessType,
+                    avgPrice: parseFloat(document.getElementById('avgPrice')?.value) || 0,
+                    avgCheck: parseFloat(document.getElementById('avgCheck')?.value) || 0,
+                    margin: parseFloat(document.getElementById('margin')?.value) || 0,
+                    staff: parseFloat(document.getElementById('staff')?.value) || 0,
+                    salaryPerEmployee: parseFloat(document.getElementById('salaryPerEmployee')?.value) || 0,
+                    utilities: parseFloat(document.getElementById('utilities')?.value) || 0,
+                    otherExpenses: parseFloat(document.getElementById('otherExpenses')?.value) || 0,
+                    taxes: parseFloat(document.getElementById('taxes')?.value) || 0,
+                    goodsCostPercent: goodsCostPercent,
+                    workingDays: parseFloat(document.getElementById('workingDays')?.value) || 26,
+                    conversion: parseFloat(document.getElementById('conversion')?.value) || 0,
+                    dailySales: parseFloat(document.getElementById('dailySales')?.value) || 0,
+                    crimeIndex: parseFloat(document.getElementById('crimeSlider')?.value) || 50,
+                    seasoning: parseFloat(document.getElementById('seasoning')?.value) || 100,
+                    notes: document.getElementById('notes')?.value || '',
+                    useCredit: document.getElementById('useCredit')?.checked,
+                    creditAmount: parseFloat(document.getElementById('creditAmount')?.value) || 0,
+                    creditRate: parseFloat(document.getElementById('creditRate')?.value) || 0,
+                    creditTerm: parseFloat(document.getElementById('creditTerm')?.value) || 0,
+                    equipmentCost: parseFloat(document.getElementById('equipmentCost')?.value) || 0,
+                    repairCost: parseFloat(document.getElementById('repairCost')?.value) || 0,
+                    licenseCost: parseFloat(document.getElementById('licenseCost')?.value) || 0,
+                    initialStock: parseFloat(document.getElementById('initialStock')?.value) || 0,
+                    firstMonth: parseFloat(document.getElementById('firstMonth')?.value) || 0
+                };
+            } catch (error) {
+                console.error('Error getting form ', error);
+                return {};
+            }
+        }
+
+        function calculateInvestmentAndPayback(data, monthlyProfit) {
+            const totalInvestment = data.equipmentCost + data.repairCost + data.licenseCost + data.initialStock + data.firstMonth;
+            
+            let monthlyPayment = 0;
+            let totalCreditCost = 0;
+            
+            if (data.useCredit && data.creditAmount > 0) {
+                const monthlyRate = data.creditRate / 100 / 12;
+                const n = data.creditTerm;
+                monthlyPayment = data.creditAmount * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
+                totalCreditCost = monthlyPayment * n - data.creditAmount;
+            }
+            
+            let ownCapital = totalInvestment;
+            let credit = 0;
+            
+            if (data.useCredit && data.creditAmount > 0) {
+                credit = Math.min(data.creditAmount, totalInvestment);
+                ownCapital = totalInvestment - credit;
+            }
+            
+            let paybackMonths = 0;
+            let remainingAmount = totalInvestment;
+            
+            for (let month = 1; month <= 120; month++) {
+                let monthProfit = monthlyProfit;
+                
+                if (data.useCredit && monthlyPayment > 0) {
+                    monthProfit -= monthlyPayment;
+                }
+                
+                remainingAmount -= monthProfit;
+                
+                if (remainingAmount <= 0) {
+                    paybackMonths = month;
+                    break;
+                }
+            }
+            
+            if (remainingAmount > 0) {
+                paybackMonths = null;
+            }
+            
+            return {
+                totalInvestment: totalInvestment,
+                ownCapital: ownCapital,
+                creditAmount: credit,
+                monthlyPayment: monthlyPayment,
+                totalCreditCost: totalCreditCost,
+                paybackMonths: paybackMonths,
+                paybackYears: paybackMonths ? (paybackMonths / 12).toFixed(1) : null,
+                breakdown: {
+                    equipment: data.equipmentCost,
+                    repair: data.repairCost,
+                    license: data.licenseCost,
+                    stock: data.initialStock,
+                    firstMonth: data.firstMonth
+                }
+            };
+        }
+
+        function generateAnalytics(data, monthlyRevenueWithSafety, monthlyProfit, totalExpenses, profitability, roi, locationScore, safetyLevel, investmentData) {
+            const analytics = [];
+            
+            if (data.footTraffic > 2000) {
+                analytics.push({
+                    icon: '📈',
+                    title: 'Отличная проходимость',
+                    desc: `${data.footTraffic} чел./день - это высокий показатель. Рекомендуется максимизировать видимость и привлекательность точки.`
+                });
+            } else if (data.footTraffic < 500) {
+                analytics.push({
+                    icon: '⚠️',
+                    title: 'Низкая проходимость',
+                    desc: `${data.footTraffic} чел./день требует особого внимания к маркетингу и качеству услуг для привлечения клиентов.`
+                });
+            }
+            
+            if (data.competitors > 10) {
+                analytics.push({
+                    icon: '🏪',
+                    title: 'Высокая конкуренция',
+                    desc: `${data.competitors} конкурентов означает насыщенный рынок. Нужна ясная дифференциация.`
+                });
+            } else if (data.competitors < 2) {
+                analytics.push({
+                    icon: '✨',
+                    title: 'Низкая конкуренция',
+                    desc: `Менее 2 конкурентов - перспективный сегмент. Захватите рынок быстро.`
+                });
+            }
+            
+            if (profitability > 20) {
+                analytics.push({
+                    icon: '💰',
+                    title: 'Высокая рентабельность',
+                    desc: `${profitability.toFixed(1)}% - отличный показатель. Бизнес должен быть прибыльным.`
+                });
+            } else if (profitability < 5) {
+                analytics.push({
+                    icon: '⚡',
+                    title: 'Низкая рентабельность',
+                    desc: `${profitability.toFixed(1)}% требует оптимизации расходов или повышения цен.`
+                });
+            }
+            
+            const rentBurden = (data.area * data.rentPerM2) / monthlyRevenueWithSafety * 100;
+            if (rentBurden > 30) {
+                analytics.push({
+                    icon: '🏗️',
+                    title: 'Высокая арендная нагрузка',
+                    desc: `Аренда занимает ${rentBurden.toFixed(1)}% от выручки. Рассмотрите альтернативные локации или переговоры.`
+                });
+            } else if (rentBurden < 15) {
+                analytics.push({
+                    icon: '✅',
+                    title: 'Оптимальная арендная нагрузка',
+                    desc: `${rentBurden.toFixed(1)}% - хороший показатель. Оставляет место для прибыли.`
+                });
+            }
+            
+            if (investmentData.paybackMonths && investmentData.paybackMonths <= 12) {
+                analytics.push({
+                    icon: '🎯',
+                    title: 'Быстрая окупаемость',
+                    desc: `${investmentData.paybackMonths} месяцев - инвестиция окупится в течение года.`
+                });
+            } else if (investmentData.paybackMonths && investmentData.paybackMonths > 36) {
+                analytics.push({
+                    icon: '⏳',
+                    title: 'Длительная окупаемость',
+                    desc: `Более 3 лет - пересмотрите модель бизнеса или параметры.`
+                });
+            }
+            
+            if (data.population > 100) {
+                analytics.push({
+                    icon: '👥',
+                    title: 'Большой потенциал клиентов',
+                    desc: `${(data.population * 1000).toLocaleString('ru-RU')} человек в районе - огромный потенциальный рынок.`
+                });
+            }
+            
+            if (safetyLevel.impact < 0.9) {
+                analytics.push({
+                    icon: '🔒',
+                    title: 'Повышенные риски безопасности',
+                    desc: `Индекс преступности ${data.crimeIndex} может снизить выручку на ${(100 - safetyLevel.impact * 100).toFixed(0)}%.`
+                });
+            }
+            
+            return analytics;
+        }
+
+        function analyzeLocation() {
+            try {
+                const data = getFormData();
+
+                if (data.area <= 0 || data.rentPerM2 < 0 || data.avgPrice <= 0) {
+                    alert('Пожалуйста, заполните обязательные поля корректно');
+                    return;
+                }
+
+                const monthlyRent = data.area * data.rentPerM2;
+                const monthlyUtilities = (monthlyRent * data.utilities / 100) || (monthlyRent * 0.05);
+                const staffCosts = data.staff * data.salaryPerEmployee;
+
+                const contactsPerDay = (data.footTraffic * data.conversion / 100) + data.dailySales;
+                const monthlyRevenue = contactsPerDay * data.avgCheck * data.workingDays * data.seasoning / 100;
+                const monthlyRevenueAdjusted = Math.max(monthlyRevenue, contactsPerDay * data.avgCheck * data.workingDays);
+
+                const safetyLevel = getSafetyLevel(data.crimeIndex);
+                const monthlyRevenueWithSafety = monthlyRevenueAdjusted * safetyLevel.impact;
+
+                const goodsCost = monthlyRevenueWithSafety * data.goodsCostPercent / 100;
+                const taxes = monthlyRevenueWithSafety * data.taxes / 100;
+                const otherCosts = monthlyRevenueWithSafety * data.otherExpenses / 100;
+                const totalExpenses = monthlyRent + monthlyUtilities + staffCosts + goodsCost + taxes + otherCosts;
+
+                const netProfit = monthlyRevenueWithSafety - totalExpenses;
+                const profitability = monthlyRevenueWithSafety > 0 ? (netProfit / monthlyRevenueWithSafety * 100) : 0;
+                const roi = monthlyRent > 0 ? (netProfit / monthlyRent * 100) : 0;
+
+                const investmentData = calculateInvestmentAndPayback(data, netProfit);
+
+                const locationScore = calculateLocationScore(data);
+                const recommendation = getRecommendation(locationScore, profitability, roi, monthlyRent, monthlyRevenueWithSafety, safetyLevel);
+                const potentialIssues = findPotentialIssues(data, locationScore, profitability, safetyLevel);
+                const analytics = generateAnalytics(data, monthlyRevenueWithSafety, netProfit, totalExpenses, profitability, roi, locationScore, safetyLevel, investmentData);
+
+                let html = `
+                    <div class="result-card">
+                        <h3>Месячная выручка (с учетом безопасности)</h3>
+                        <div class="result-value currency">${formatNumber(monthlyRevenueWithSafety.toFixed(0))}</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Чистая прибыль в месяц</h3>
+                        <div class="result-value currency">${formatNumber(netProfit.toFixed(0))}</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Рентабельность (ROS)</h3>
+                        <div class="result-value">${profitability.toFixed(1)}%</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>ROI (на арендную плату)</h3>
+                        <div class="result-value">${roi.toFixed(1)}%</div>
+                    </div>
+
+                    <div class="analytics-section">
+                        <h3>Аналитические рекомендации</h3>
+                        ${analytics.map(item => `
+                            <div class="analytics-item">
+                                <div class="analytics-icon">${item.icon}</div>
+                                <div class="analytics-text">
+                                    <div class="analytics-title">${item.title}</div>
+                                    <div class="analytics-desc">${item.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="summary-block">
+                        <div class="summary-title">Итоговая оценка локации</div>
+                        <div class="summary-text">
+                            ${recommendation.type === 'positive' ? 'Локация одобрена для инвестирования<br>' : ''}
+                            ${recommendation.type === 'warning' ? 'Локация требует рассмотрения<br>' : ''}
+                            ${recommendation.type === 'negative' ? 'Локация не рекомендуется<br>' : ''}
+                            Оценка локации: ${locationScore.toFixed(1)}/100 | 
+                            Рентабельность: ${profitability.toFixed(1)}% | 
+                            ROI: ${roi.toFixed(1)}%
+                        </div>
+                    </div>
+
+                    <div class="investment-section">
+                        <h3>Структура инвестиций</h3>
+                        <div class="investment-item">
+                            <span>Оборудование</span>
+                            <span>${formatNumber(investmentData.breakdown.equipment.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Ремонт/отделка</span>
+                            <span>${formatNumber(investmentData.breakdown.repair.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Лицензии/регистрация</span>
+                            <span>${formatNumber(investmentData.breakdown.license.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Начальный запас</span>
+                            <span>${formatNumber(investmentData.breakdown.stock.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Первый месяц расходы</span>
+                            <span>${formatNumber(investmentData.breakdown.firstMonth.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item total">
+                            <span>Всего инвестиций</span>
+                            <span>${formatNumber(investmentData.totalInvestment.toFixed(0))} ₽</span>
+                        </div>
+                    </div>
+
+                    <div class="investment-section">
+                        <h3>Источники финансирования</h3>
+                        <div class="investment-item">
+                            <span>Собственный капитал</span>
+                            <span>${formatNumber(investmentData.ownCapital.toFixed(0))} ₽</span>
+                        </div>
+                        ${investmentData.creditAmount > 0 ? `
+                        <div class="investment-item">
+                            <span>Кредитные средства</span>
+                            <span>${formatNumber(investmentData.creditAmount.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Ежемесячный платеж по кредиту</span>
+                            <span>${formatNumber(investmentData.monthlyPayment.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="investment-item">
+                            <span>Переплата по кредиту</span>
+                            <span>${formatNumber(investmentData.totalCreditCost.toFixed(0))} ₽</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="payback-section">
+                        <h3>Расчет окупаемости</h3>
+                        ${investmentData.paybackMonths ? `
+                        <div class="payback-item">
+                            <span>Срок окупаемости</span>
+                            <span><strong>${investmentData.paybackMonths} месяцев (${investmentData.paybackYears} лет)</strong></span>
+                        </div>
+                        <div class="payback-timeline">
+                            <div class="timeline-bar">
+                                <div class="timeline-fill" style="width: ${Math.min((investmentData.paybackMonths / 60) * 100, 100)}%">
+                                    ${investmentData.paybackMonths} мес.
+                                </div>
+                            </div>
+                            <div class="timeline-label">
+                                ${investmentData.paybackMonths <= 12 ? 'Отличная окупаемость' : 
+                                  investmentData.paybackMonths <= 24 ? 'Хорошая окупаемость' : 
+                                  investmentData.paybackMonths <= 36 ? 'Приемлемая окупаемость' : 
+                                  'Долгая окупаемость'}
+                            </div>
+                        </div>
+                        ` : `
+                        <div class="payback-item" style="color: #ffcccc;">
+                            <span>Срок окупаемости</span>
+                            <span><strong>Более 5 лет или не окупается</strong></span>
+                        </div>
+                        `}
+                    </div>
+
+                    <div class="recommendation ${recommendation.type}">
+                        <h4>${recommendation.title}</h4>
+                        <p>${recommendation.text}</p>
+                    </div>
+
+                    <h3 style="margin-top: 25px; color: #667eea;">Анализ безопасности района</h3>
+                    <div class="crime-safety-block">
+                        <div class="safety-level">
+                            <div class="safety-indicator">${safetyLevel.emoji}</div>
+                            <div class="safety-text">
+                                <div class="safety-label">${safetyLevel.label} (индекс: ${Math.round(data.crimeIndex)})</div>
+                                <div class="safety-description">${safetyLevel.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid" style="margin-top: 20px;">
+                        <div class="metric-small">
+                            <div class="metric-small-label">Ежедневная выручка</div>
+                            <div class="metric-small-value">${formatNumber((monthlyRevenueWithSafety / data.workingDays).toFixed(0))} ₽</div>
+                        </div>
+                        <div class="metric-small">
+                            <div class="metric-small-label">Ежемесячные затраты</div>
+                            <div class="metric-small-value">${formatNumber(totalExpenses.toFixed(0))} ₽</div>
+                        </div>
+                        <div class="metric-small">
+                            <div class="metric-small-label">% Аренды от выручки</div>
+                            <div class="metric-small-value">${((monthlyRent / monthlyRevenueWithSafety) * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="metric-small">
+                            <div class="metric-small-label">Оценка локации</div>
+                            <div class="metric-small-value">${locationScore.toFixed(1)}/100</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 25px; color: #667eea;">Детальный анализ затрат</h3>
+                    <div class="expense-breakdown">
+                        <div class="expense-item">
+                            <span class="expense-label">Аренда помещения</span>
+                            <span class="expense-value">${formatNumber(monthlyRent.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item">
+                            <span class="expense-label">Товар/Сырье</span>
+                            <span class="expense-value">${formatNumber(goodsCost.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item">
+                            <span class="expense-label">Зарплата персонала</span>
+                            <span class="expense-value">${formatNumber(staffCosts.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item">
+                            <span class="expense-label">ЖКХ и коммунальные</span>
+                            <span class="expense-value">${formatNumber(monthlyUtilities.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item">
+                            <span class="expense-label">Налоги</span>
+                            <span class="expense-value">${formatNumber(taxes.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item">
+                            <span class="expense-label">Прочие расходы</span>
+                            <span class="expense-value">${formatNumber(otherCosts.toFixed(0))} ₽</span>
+                        </div>
+                        <div class="expense-item total">
+                            <span class="expense-label">ИТОГО:</span>
+                            <span class="expense-value">${formatNumber(totalExpenses.toFixed(0))} ₽</span>
+                        </div>
+                    </div>
+                `;
+
+                if (potentialIssues.length > 0) {
+                    html += '<h3 style="margin-top: 25px; color: #667eea;">Точки внимания</h3>';
+                    potentialIssues.forEach(issue => {
+                        const issueType = issue.severity === 'high' ? 'negative' : issue.severity === 'medium' ? 'warning' : 'positive';
+                        html += `
+                            <div class="recommendation ${issueType}">
+                                <h4>${issue.title}</h4>
+                                <p>${issue.text}</p>
+                            </div>
+                        `;
+                    });
+                }
+
+                const resultsDiv = document.getElementById('results');
+                if (resultsDiv) {
+                    resultsDiv.innerHTML = html;
+                    resultsDiv.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('downloadReportBtn').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error analyzing location:', error);
+                alert('Ошибка при анализе. Проверьте данные и попробуйте снова.');
+            }
+        }
+
+        function calculateLocationScore(data) {
+            let score = 50;
+
+            if (data.footTraffic > 2000) score += 25;
+            else if (data.footTraffic > 1000) score += 15;
+            else if (data.footTraffic > 500) score += 10;
+            else score += 5;
+
+            if (data.competitors < 2) score += 15;
+            else if (data.competitors < 5) score += 10;
+            else if (data.competitors < 10) score += 5;
+            else score -= 5;
+
+            if (data.visibility === 'high') score += 10;
+            else if (data.visibility === 'medium') score += 5;
+
+            if (data.parking === 'yes') score += 5;
+
+            if (data.population > 100) score += 10;
+            else if (data.population > 50) score += 7;
+            else if (data.population > 20) score += 4;
+
+            if (data.income === 'high') score += 5;
+
+            return Math.min(100, Math.max(0, score));
+        }
+
+        function getRecommendation(locationScore, profitability, roi, rent, revenue, safetyLevel) {
+            let baseRecommendation;
+
+            if (locationScore < 40 || profitability < -10 || roi < 0) {
+                baseRecommendation = {
+                    type: 'negative',
+                    title: 'Локация требует тщательного анализа',
+                    text: 'Показатели указывают на высокие риски.'
+                };
+            } else if (locationScore < 60 || profitability < 5) {
+                baseRecommendation = {
+                    type: 'warning',
+                    title: 'Локация имеет потенциал, но есть риски',
+                    text: 'Бизнес может быть прибыльным, но требует тщательного управления.'
+                };
+            } else if (locationScore >= 75 && profitability >= 15 && roi >= 100) {
+                baseRecommendation = {
+                    type: 'positive',
+                    title: 'Отличная локация для бизнеса',
+                    text: 'Показатели выглядят привлекательно.'
+                };
+            } else {
+                baseRecommendation = {
+                    type: 'positive',
+                    title: 'Локация перспективна',
+                    text: 'Показатели находятся в нормальном диапазоне.'
+                };
+            }
+
+            return baseRecommendation;
+        }
+
+        function findPotentialIssues(data, locationScore, profitability, safetyLevel) {
+            const issues = [];
+
+            if (data.crimeIndex > 75) {
+                issues.push({
+                    severity: 'high',
+                    title: 'Критический уровень преступности',
+                    text: 'Индекс преступности выше 75'
+                });
+            } else if (data.crimeIndex < 30) {
+                issues.push({
+                    severity: 'low',
+                    title: 'Безопасный район',
+                    text: 'Низкий уровень преступности является преимуществом'
+                });
+            }
+
+            if (data.population > 100) {
+                issues.push({
+                    severity: 'low',
+                    title: 'Высокое население района',
+                    text: 'Большое население обеспечивает больший потенциал клиентов'
+                });
+            }
+
+            if (locationScore > 80) {
+                issues.push({
+                    severity: 'low',
+                    title: 'Отличное расположение',
+                    text: 'Локация показывает высокий потенциал'
+                });
+            }
+
+            return issues;
+        }
+
+        function downloadReport() {
+            try {
+                const resultsDiv = document.getElementById('results');
+                const htmlContent = resultsDiv ? resultsDiv.innerHTML : '';
+                
+                const fullHTML = `
+                <!DOCTYPE html>
+                <html lang="ru">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Отчет анализа локации</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                        h2 { color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+                        .result-card { background: #f0f0f0; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                        .recommendation { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 15px 0; }
+                        .investment-section { background: #f1f8f4; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                        .expense-breakdown { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 8px; }
+                        .expense-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Отчет анализа локации розничного бизнеса</h1>
+                    <p><strong>Дата создания:</strong> ${new Date().toLocaleString('ru-RU')}</p>
+                    ${htmlContent}
+                </body>
+                </html>
+                `;
+                
+                const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `location_analysis_${new Date().getTime()}.html`;
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                    link.remove();
+                }, 1000);
+            } catch (error) {
+                alert('Ошибка скачивания отчета');
+                console.error(error);
+            }
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ru-RU').format(num);
+        }
+
+        function resetForm() {
+            try {
+                document.querySelectorAll('input, select').forEach(element => {
+                    if (element.type === 'checkbox') {
+                        element.checked = false;
+                    } else if (element.type === 'range') {
+                        element.value = 50;
+                    } else {
+                        element.value = '';
+                    }
+                });
+                const input = document.getElementById('goodsCostInput');
+                const auto = document.getElementById('goodsCostAuto');
+                if (input) input.style.display = 'none';
+                if (auto) auto.style.display = 'block';
+                
+                const results = document.getElementById('results');
+                if (results) results.innerHTML = '<div class="no-data">Заполните форму и нажмите кнопку анализа</div>';
+                document.getElementById('downloadReportBtn').style.display = 'none';
+                
+                resetDetection();
+                updateCrimeSafety();
+                
+                document.getElementById('safetyTab').classList.remove('has-update');
+                document.getElementById('detectBtn').disabled = true;
+                document.getElementById('creditFields').style.display = 'none';
+                onAddressChange();
+            } catch (error) {
+                console.error('Error resetting form:', error);
+            }
+        }
+
+        window.addEventListener('load', function() {
+            try {
+                document.getElementById('workingDays').value = 26;
+                document.getElementById('utilities').value = 5;
+                document.getElementById('otherExpenses').value = 10;
+                document.getElementById('seasoning').value = 100;
+                document.getElementById('crimeSlider').value = 50;
+                
+                updateGoodsCostHint();
+                updateCrimeSafety();
+                onAddressChange();
+            } catch (error) {
+                console.error('Error on page load:', error);
+            }
+        });
+
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e);
+        });
+    </script>
+</body>
+</html>
